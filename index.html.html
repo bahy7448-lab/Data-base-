@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study: Database Management Systems | AI Department</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;700&family=Orbitron:wght@500;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #00f2fe;
+            --secondary: #4facfe;
+            --accent: #f093fb;
+            --bg-dark: #06070a;
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-hover: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; scroll-behavior: smooth; }
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: var(--bg-dark);
+            color: #ffffff;
+            overflow-x: hidden;
+            background-image: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #06070a 100%);
+        }
+
+        #splash {
+            height: 100vh; width: 100%; position: fixed; z-index: 9999;
+            background: #000; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; text-align: center;
+            transition: 1s cubic-bezier(0.85, 0, 0.15, 1);
+        }
+        #splash h1 { font-family: 'Orbitron'; font-size: 2.8rem; background: linear-gradient(to right, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px; padding: 0 15px; }
+        #splash h2 { font-family: 'Orbitron'; font-size: 1.5rem; color: #fff; opacity: 0.8; }
+        .start-btn { margin-top: 40px; padding: 15px 50px; background: linear-gradient(45deg, var(--secondary), var(--primary)); border: none; color: #000; font-weight: bold; border-radius: 50px; cursor: pointer; font-size: 1.2rem; transition: 0.3s; }
+        .start-btn:hover { transform: scale(1.1); box-shadow: 0 0 30px var(--primary); }
+
+        #dashboard { display: none; padding: 50px 20px; min-height: 100vh; animation: fadeIn 1s; }
+        .header-main { text-align: center; margin-bottom: 60px; }
+        .header-main h1 { font-family: 'Orbitron'; color: var(--primary); font-size: 2.5rem; }
+        
+        .lecture-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px; max-width: 1200px; margin: 0 auto;
+        }
+        .lec-card {
+            background: var(--glass); border: 1px solid var(--glass-border);
+            border-radius: 20px; padding: 30px; cursor: pointer;
+            transition: 0.4s; position: relative; overflow: hidden;
+            text-align: center;
+        }
+        .lec-card:hover { background: var(--glass-hover); transform: translateY(-10px); border-color: var(--primary); }
+        .lec-card i { font-size: 3rem; color: var(--secondary); margin-bottom: 20px; }
+        .lec-card h2 { font-size: 1.4rem; margin-bottom: 10px; font-family: 'Orbitron'; }
+
+        #lecture-view { display: none; padding: 40px 20px; animation: slideUp 0.6s ease-out; }
+        .back-btn { background: var(--glass); border: 1px solid var(--glass-border); color: #fff; padding: 10px 25px; border-radius: 10px; cursor: pointer; margin-bottom: 30px; transition: 0.3s; }
+        .back-btn:hover { background: var(--primary); color: #000; }
+        
+        .content-container { max-width: 900px; margin: 0 auto; background: var(--glass); padding: 40px; border-radius: 30px; border: 1px solid var(--glass-border); }
+        
+        .explanation-section { margin-bottom: 40px; }
+        .expl-block { background: rgba(0,0,0,0.2); padding: 20px; border-radius: 15px; margin-bottom: 20px; border-left: 4px solid var(--primary); direction: ltr; text-align: left; }
+        .expl-en { font-family: 'Segoe UI', sans-serif; font-size: 1.1rem; color: #fff; line-height: 1.6; margin-bottom: 10px; }
+        .expl-ar { font-family: 'Cairo', sans-serif; font-size: 1rem; color: #b0bec5; line-height: 1.6; direction: rtl; text-align: right; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 10px; }
+        
+        .quiz-area { margin-top: 50px; }
+        .q-card { background: rgba(255,255,255,0.02); padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05); direction: ltr; text-align: left; }
+        .q-text { font-family: 'Segoe UI', sans-serif; font-size: 1.1rem; font-weight: 600; margin-bottom: 15px; color: #fff; }
+        .opts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .opt { background: rgba(255,255,255,0.05); border: 1px solid #333; color: #fff; padding: 12px; border-radius: 8px; cursor: pointer; text-align: left; font-family: 'Segoe UI', sans-serif; transition: 0.2s; }
+        .opt:hover { background: rgba(255,255,255,0.1); border-color: var(--secondary); }
+        .opt.correct { background: #27ae60 !important; border-color: #2ecc71; color: #fff; }
+        .opt.wrong { background: #c0392b !important; border-color: #e74c3c; color: #fff; }
+
+        .essay-area { margin-top: 40px; border-top: 1px solid #333; padding-top: 30px; }
+        .essay-item { margin-bottom: 15px; border-radius: 10px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); }
+        .essay-q { 
+            color: #eee; font-weight: bold; background: rgba(240, 147, 251, 0.08); 
+            padding: 15px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+            transition: 0.3s; text-align: left; direction: ltr;
+        }
+        .essay-q:hover { background: rgba(240, 147, 251, 0.15); }
+        .essay-q .ar-side { direction: rtl; text-align: right; font-family: 'Cairo'; font-size: 0.95rem; display: block; color: #b0bec5; margin-top: 5px; }
+        .essay-ans { 
+            max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out; 
+            background: rgba(0,0,0,0.4); color: #81d4fa; padding: 0 15px;
+            font-family: 'Segoe UI', sans-serif; border-left: 3px solid var(--accent);
+            text-align: left; direction: ltr;
+        }
+        .essay-item.active .essay-ans { max-height: 500px; padding: 15px; }
+        .essay-item.active i { transform: rotate(180deg); }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(50px); } to { opacity: 1; transform: translateY(0); } }
+        @media (max-width: 768px) { .opts-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+    <div id="splash">
+        <h1>Study: Database Management Systems</h1>
+        <h2>AI Department - Faculty of AI</h2>
+        <button class="start-btn" onclick="goToDashboard()">Explore Lectures <i class="fas fa-arrow-right"></i></button>
+    </div>
+
+    <div id="dashboard">
+        <div class="header-main">
+            <h1>Study: Database Management Systems</h1>
+            <p>Select a specific engineering lecture to access automated bilingual notes, English MCQs, and detailed structural essays.</p>
+        </div>
+        <div class="lecture-grid" id="grid-container"></div>
+    </div>
+
+    <div id="lecture-view">
+        <div style="max-width: 900px; margin: 0 auto;">
+            <button class="back-btn" onclick="backToDashboard()"><i class="fas fa-chevron-left"></i> Back to Dashboard</button>
+            <div id="lecture-content" class="content-container"></div>
+        </div>
+    </div>
+
+    <script>
+        const allLectures = {
+            1: {
+                title: "Lecture 1: Relationship Types & Degree (Chapter 4)",
+                expl: [
+                    {
+                        en: "A relationship defines how individual entities interact within a database model. The 'Degree' of a relationship refers to the number of participating entities.",
+                        ar: "تحدد العلاقة كيفية تفاعل الكيانات الفردية داخل نموذج قاعدة البيانات. يشير 'درجة العلاقة' إلى عدد الكيانات المشاركة في هذه العلاقة."
+                    },
+                    {
+                        en: "Relationships can be Unary (Recursive - related to itself), Binary (between two entities), or Ternary (connecting three entities simultaneously).",
+                        ar: "يمكن أن تكون العلاقات أحادية (Unary/Recursive - الكيان مرتبط بنفسه)، ثنائية (Binary - بين كيانين)، أو ثلاثية (Ternary - تربط ثلاثة كيانات في نفس الوقت)."
+                    }
+                ],
+                mcqs: [
+                    {q: "What shape is used to represent a relationship in the Chen ER model?", o: ["Rectangle", "Oval", "Diamond", "Double Rectangle"], a: 2},
+                    {q: "When an entity type is linked to itself, the relationship degree is called:", o: ["Unary", "Binary", "Ternary", "N-ary"], a: 0},
+                    {q: "A relationship involving exactly three entities is defined as:", o: ["Recursive", "Binary", "Ternary", "Triple-Join"], a: 2},
+                    {q: "If an Employee 'manages' other Employees, this is an example of a:", o: ["Binary relationship", "Unary relationship", "Ternary relationship", "Weak relationship"], a: 1},
+                    {q: "The number of entities participating in a relationship is its:", o: ["Cardinality", "Degree", "Participation", "Constraint"], a: 1},
+                    {q: "True or False: In Chen's notation, attributes can be attached to relationships.", o: ["True", "False"], a: 0},
+                    {q: "Which represents a 1:M relationship layout?", o: ["One Lecturer teaches one Student", "One Department employs many Professors", "Many Students take many Exams", "One Manager owns one Store"], a: 1},
+                    {q: "Relationship constraints are primarily categorized into:", o: ["Primary & Foreign", "Cardinality ratios & Participation", "Strong & Weak", "Simple & Derived"], a: 1},
+                    {q: "A recursive relationship is also formally known as:", o: ["Binary", "Ternary", "Unary", "Weak"], a: 2},
+                    {q: "In an ERD, if every entity instance must participate in a relationship, participation is:", o: ["Partial", "Total", "Optional", "Composite"], a: 1}
+                ],
+                essays: [
+                    {en: "Explain the absolute difference between a Binary and a Ternary relationship with structural instances.", ar: "اشرح الفرق المطلق بين العلاقة الثنائية والثلاثية مع أمثلة هيكلية.", ans: "A Binary relationship links exactly two distinct entities (e.g., Student registers for Course). A Ternary relationship structurally connects three distinct entities simultaneously under a single diamond (e.g., Student learns a Subject from a Faculty member)."},
+                    {en: "Define a Recursive (Unary) relationship and provide a real-life industrial database example.", ar: "عرّف العلاقة الدائرية/الأحادية وقدم مثالاً من واقع قواعد البيانات الصناعية الحقيقية.", ans: "A Unary relationship occurs when an entity type participates in a relationship with itself. For example, within an EMPLOYEE table, a supervisor 'manages' subordinates, where both roles are instances of the same Employee entity."},
+                    {en: "What are the core sequential steps required to draw an accurate E-R Diagram from a problem statement?", ar: "ما هي الخطوات المتتالية الأساسية المطلوبة لرسم مخطط E-R دقيق من بيان المشكلة؟", ans: "1. Understand the problem completely. 2. Identify all entities and their unique identifiers/attributes. 3. Categorize attribute types (simple, composite, multi-valued). 4. Establish relationship mappings and specify their constraints (1:M, M:N, 1:1) and participation types."},
+                    {en: "Contrast between Partial and Total participation constraints within an ER schema.", ar: "قارن بين قيود المشاركة الجزئية والمشاركة الكلية داخل مخطط ER.", ans: "Total participation (indicated by double lines) means every instance in the entity set must participate in at least one relationship instance. Partial participation means only some instances in the entity set participate."},
+                    {en: "Why do we map many-to-many (M:N) relationships into separate associative models during system design?", ar: "لماذا نقوم بتحويل العلاقات متعدد إلى متعدد (M:N) إلى نماذج ترابطية منفصلة أثناء تصميم النظام؟", ans: "Because relational database tables cannot natively resolve direct M:N links without causing severe data duplication. Decomposing it into two 1:M relationships with an intermediate bridge table normalizes the structure."}
+                ]
+            },
+            2: {
+                title: "Lecture 2: Strong vs. Weak Entities (Chapter 5)",
+                expl: [
+                    {
+                        en: "A Strong Entity is existence-independent and possesses a complete Primary Key. It is drawn as a single rectangle.",
+                        ar: "الكيان القوي (Strong Entity) هو كيان مستقل الوجود ويمتلك مفتاحاً أساسياً كاملاً، ويُرسم على شكل مستطيل مفرد."
+                    },
+                    {
+                        en: "A Weak Entity depends on a strong entity for its existence and lacks a primary key, using a Partial Discriminator instead. It is represented by a double rectangle.",
+                        ar: "الكيان الضعيف (Weak Entity) يعتمد وجوده على كيان قوي آخر ولا يمتلك مفتاحاً أساسياً مستقلاً بل يستخدم مميزاً جزئياً (Discriminator)، ويُمثل بمستطيل مزدوج."
+                    }
+                ],
+                mcqs: [
+                    {q: "How is a Weak Entity visually represented in Chen's ER model?", o: ["Single Rectangle", "Double Rectangle", "Diamond Shape", "Double Diamond"], a: 1},
+                    {q: "A weak entity requires which component from its identifying strong parent?", o: ["Foreign Key only", "Primary Key for identity connection", "Derived attribute", "Composite attribute"], a: 1},
+                    {q: "The attribute that distinguishes weak entities belonging to the same strong entity is the:", o: ["Primary Key", "Discriminator / Partial Key", "Alternate Key", "Surrogate Key"], a: 1},
+                    {q: "The relationship linking a strong entity to a weak entity is drawn as a:", o: ["Single Diamond", "Double Diamond", "Double Oval", "Dotted Line"], a: 1},
+                    {q: "Which of the following is a classic example of a Weak Entity?", o: ["Customer", "Loan Payment / Dependent", "Product", "Employee ID"], a: 1},
+                    {q: "The participation of a weak entity in its identifying relationship is always:", o: ["Partial", "Total", "Optional", "Conditional"], a: 1},
+                    {q: "A strong entity is structurally defined as being:", o: ["Dependent on an environment", "Existence-independent with a valid Primary Key", "Lacking attributes", "Always linked to a recursive key"], a: 1},
+                    {q: "In an ER model diagram, a partial key attribute is underlined with a:", o: ["Solid line", "Dashed / Dashed line", "Double solid line", "No line"], a: 1},
+                    {q: "A relationship between two strong entities is called a:", o: ["Weak relationship", "Strong relationship", "Recursive bridge", "Partial link"], a: 1},
+                    {q: "True or False: A weak entity can exist in a schema without any owner strong entity.", o: ["True", "False"], a: 1}
+                ],
+                essays: [
+                    {en: "Define Weak Entities and explain the critical operational role of a Partial Discriminator Key.", ar: "عرّف الكيانات الضعيفة واشرح الدور التشغيلي الحاسم للمفتاح المميز الجزئي.", ans: "A weak entity cannot be uniquely identified by its own attributes alone and depends on a parent strong entity. A Partial Discriminator Key is the attribute that uniquely identifies distinct weak instances tied directly to a single, identical parent instance."},
+                    {en: "Elaborate on the graphical symbols used in Chen's notation to represent strong vs. weak architectural sets.", ar: "توسع في الرموز الرسومية المستخدمة في نموذج Chen لتمثيل المجموعات البنيوية القوية مقابل الضعيفة.", ans: "Strong Entities use single rectangles, and their relationships use single diamonds. Weak Entities use double rectangles, and their identifying operational relationships use double diamonds. Partial keys use dashed underlines."},
+                    {en: "Explain why a weak entity must always maintain a Total Participation status with its parent owner.", ar: "اشرح لماذا يجب على الكيان الضعيف الحفاظ دائماً على حالة مشاركة كاملة مع مالكه الأب.", ans: "Because a weak entity is completely existence-dependent on its strong parent. If an instance of a weak entity is not connected to a strong entity, it cannot exist or be referenced in the database, breaking referential integrity."},
+                    {en: "Provide a detailed commercial scenario mapping out a Strong Entity and its corresponding Weak Entity.", ar: "قدم سيناريو تجاري مفصل يوضح الكيان القوي والكيان الضعيف المقابل له.", ans: "In a banking layout, a 'Loan' is a strong entity with a unique Loan_Number. The individual 'Payment' cycles are weak entities because payment numbers (e.g., P1, P2) repeat across different loans and only gain unique structural meaning when paired with a specific Loan_Number."},
+                    {en: "How is the final structural Primary Key of a weak table formed during relational model mapping?", ar: "كيف يتم تشكيل المفتاح الأساسي الهيكلي النهائي لجدول ضعيف أثناء عملية التحويل للنموذج العلائقي؟", ans: "The final primary key of a weak entity table is formed by taking the Primary Key of the identifying strong parent entity table (as a foreign key) and combining it with the weak entity's own Partial Discriminator Key."}
+                ]
+            },
+            3: {
+                title: "Lecture 3: Advanced Review & Comprehensive ERDs (Chapter 6)",
+                expl: [
+                    {
+                        en: "Comprehensive system design requires evaluating unified MCQ metrics and constructing detailed Entity-Relationship Diagrams (ERDs) for complex real-world operations.",
+                        ar: "يتطلب تصميم الأنظمة الشاملة تقييم مقاييس الاختيار من متعدد الموحدة وبناء مخططات كيانات وعلاقات (ERDs) مفصلة للعمليات المعقدة في العالم الحقيقي."
+                    },
+                    {
+                        en: "Key types include Single-Valued, Derived (calculated dynamically), Multi-Valued (containing multiple entry parameters), and Composite attributes.",
+                        ar: "تشمل أنواع الخصائص: أحادية القيمة، المشتقة (يتم حسابها ديناميكياً)، متعددة القيم (تحتوي على معاملات إدخال متعددة)، والخصائص المركبة."
+                    }
+                ],
+                mcqs: [
+                    {q: "Which SQL sublanguage is explicitly utilized to define and alter structural schema layouts like tables?", o: ["DML", "DCL", "DDL", "TCL"], a: 2},
+                    {q: "An attribute that can be divided into smaller, independent sub-attributes is classified as:", o: ["Simple", "Composite", "Derived", "Multi-valued"], a: 1},
+                    {q: "How is a Derived Attribute represented visually within an ER chart model?", o: ["Solid Oval", "Dashed Oval", "Double Oval", "Diamond"], a: 1},
+                    {q: "An attribute that stores multiple separate phone numbers for a single student is:", o: ["Composite", "Multi-valued", "Derived", "Key Attribute"], a: 1},
+                    {q: "What does DCL manage within standard relational engine infrastructures?", o: ["Table structure generation", "User permissions and operational security (GRANT/REVOKE)", "Transaction rollbacks", "Data insertions"], a: 1},
+                    {q: "A university Online Exam System containing student metrics, exam IDs, and course links is structured via a:", o: ["Spreadsheet", "Relational Schema / ERD Framework", "Text File", "Static Matrix"], a: 1},
+                    {q: "How is a Multi-valued attribute mapped graphically in Chen's notation?", o: ["Dashed Oval", "Double Oval", "Rectangle", "Double Diamond"], a: 1},
+                    {q: "Age calculated directly from a Date of Birth parameter represents a:", o: ["Key attribute", "Derived attribute", "Composite attribute", "Multi-valued attribute"], a: 1},
+                    {q: "Data Definition Language (DDL) commands include which of the following?", o: ["INSERT", "SELECT", "CREATE / ALTER", "UPDATE"], a: 2},
+                    {q: "True or False: A strong entity can safely possess a multi-valued attribute as part of its core definition.", o: ["True", "False"], a: 0}
+                ],
+                essays: [
+                    {en: "Break down an Online Exam System into its core systemic entities, detailing their essential attributes.", ar: "قم بتفكيك نظام امتحانات عبر الإنترنت إلى كياناته الأساسية، مع تفصيل خصائصها الجوهرية.", ans: "Entities include: 1. Student (Student_ID, Name, Email, multi-valued Phone). 2. Exam (Exam_ID, Title, Duration, Total_Marks). 3. Question (Q_ID, Text, Marks, Type, Difficulty). 4. Result (Score, Grade, Attempt_Date)."},
+                    {en: "Compare Composite attributes with Multi-valued attributes, outlining their distinct visual representations.", ar: "قارن بين الخصائص المركبة والخصائص متعددة القيم، مع توضيح تمثيلاتها المرئية المميزة.", ans: "A Composite attribute can be split into simpler independent parts (e.g., Name splits into First_Name and Last_Name) and uses connected sub-ovals. A Multi-valued attribute can hold multiple values for one instance (e.g., Phone numbers) and uses a double oval."},
+                    {en: "Explain the role of a Derived Attribute and why it doesn't always require physical storage in database tracks.", ar: "اشرح دور الخاصية المشتقة ولماذا لا تتطلب دائماً تخزيناً في مسارات قاعدة البيانات.", ans: "A Derived attribute (e.g., Age) is dynamically computed from stored data (e.g., Date_of_Birth). It is not physically stored to save space and prevent data inconsistency if the base values update."},
+                    {en: "What specific roles do DDL and DML sublanguages play within corporate database engines?", ar: "ما الأدوار المحددة التي تلعبها اللغات الفرعية DDL و DML داخل محركات قواعد بيانات الشركات؟", ans: "DDL (Data Definition Language) creates, modifies, and drops database structures like tables and indexes. DML (Data Manipulation Language) inserts, updates, deletes, and retrieves the actual data records within those structures."},
+                    {en: "Detail how a 'Result' entity operates as an associative relationship layout connecting Students and Exams.", ar: "فصّل كيف يعمل كيان 'النتيجة' كعلاقة ترابطية تربط بين الطلاب والامتحانات.", ans: "A 'Result' captures the specific performance metrics generated when a unique Student sits for a unique Exam. It acts as an associative entity that resolves the many-to-many relationship between Students and Exams."}
+                ]
+            },
+            4: {
+                title: "Lecture 4: Database Keys Classification (Chapter 7)",
+                expl: [
+                    {
+                        en: "Keys are attributes that uniquely identify tuples within a relation and establish solid connections between separate database tables.",
+                        ar: "المفاتيح (Keys) هي خصائص تحدد الصفوف (Tuples) بشكل فريد داخل الجدول وتنشئ روابط قوية ومتماسكة بين جداول قاعدة البيانات المنفصلة."
+                    },
+                    {
+                        en: "A Super Key uniquely identifies rows but may contain redundant data. A Candidate Key is a minimal super key with zero redundancies. A Primary Key is the chosen candidate key.",
+                        ar: "المفتاح الفائق (Super Key) يحدد الصفوف فريداً ولكنه قد يحتوي على بيانات زائدة. المفتاح المرشح (Candidate Key) هو مفتاح فائق أدنى بلا زيادات زائدة. المفتاح الأساسي (Primary Key) هو المفتاح المرشح الذي تم اختياره فعلياً."
+                    },
+                    {
+                        en: "A Foreign Key establishes a relationship with another table by referencing its primary key, maintaining referential integrity.",
+                        ar: "المفتاح الأجنبي (Foreign Key) ينشئ علاقة مع جدول آخر عن طريق الإشارة إلى مفتاحه الأساسي، مما يحافظ على التكامل المرجعي للبيانات."
+                    }
+                ],
+                mcqs: [
+                    {q: "Which key is defined as a minimal super key with no redundant attributes?", o: ["Super Key", "Candidate Key", "Foreign Key", "Surrogate Key"], a: 1},
+                    {q: "A primary key attribute can absolutely NEVER accept which value parameter?", o: ["Zero", "Negative Numbers", "NULL Values", "Duplicate Strings"], a: 2},
+                    {q: "An Alternate Key is formally defined as a:", o: ["Foreign key variant", "Candidate key not chosen as the Primary Key", "Super key with data redundancies", "Composite string key"], a: 1},
+                    {q: "The primary purpose of a Foreign Key configuration is to:", o: ["Speed up computational math", "Establish referential relationships between tables", "Prevent text inputs", "Replace candidate keys"], a: 1},
+                    {q: "How many Primary Keys can exist within a single relational database table layout?", o: ["Exactly two", "Unlimited", "Only One", "None"], a: 2},
+                    {q: "A combination key containing more than one attribute to enforce unique row identification is a:", o: ["Surrogate Key", "Composite Key", "Foreign Key", "Unique Flag"], a: 1},
+                    {q: "True or False: A table can contain multiple separate Foreign Keys referencing different parent targets.", o: ["True", "False"], a: 0},
+                    {q: "An artificial key created by the system engine with zero real-world business meaning is a:", o: ["Candidate Key", "Alternate Key", "Surrogate Key", "Super Key"], a: 2},
+                    {q: "A Super Key can be described mathematically as being:", o: ["Always minimal", "Any attribute combo that ensures unique identification, even with redundancies", "Strictly dependent on a foreign index", "Always containing null options"], a: 1},
+                    {q: "Referential integrity constraints are monitored and enforced exclusively via:", o: ["Primary Keys", "Foreign Keys", "Derived attributes", "Composite fields"], a: 1}
+                ],
+                essays: [
+                    {en: "Formally trace the progression from a Super Key to a Candidate Key, and finally to a Primary Key.", ar: "تتبع رسمياً التقدم من المفتاح الفائق إلى المفتاح المرشح، وأخيراً إلى المفتاح الأساسي.", ans: "A Super Key is any set of attributes that uniquely identifies rows. A Candidate Key is a minimized Super Key with all redundant fields removed. The Primary Key is the single candidate key chosen by the architect to uniquely index the entire table."},
+                    {en: "What is an Alternate Key, and how does it relate to the Candidate Keys pool?", ar: "ما هو المفتاح البديل، وكيف يرتبط بمجموعة المفاتيح المرشحة؟", ans: "An Alternate Key is simply any Candidate Key that was not selected to be the Primary Key. It remains unique and can act as a backup unique identifier, but is not the main index for foreign references."},
+                    {en: "Define the core properties and validation limitations governing a structural Foreign Key mapping.", ar: "حدد الخصائص الأساسية وقيود التحقق التي تحكم رسم الخرائط الهيكلية للمفاتيح الأجنبية.", ans: "A Foreign Key must match the data type of the Primary Key it references in the parent table. It enforces referential integrity, meaning its values must either exist in the parent primary key column or be NULL."},
+                    {en: "Explain why a composite primary key can never hold a NULL value in any of its constituent attributes.", ar: "اشرح لماذا لا يمكن للمفتاح الأساسي المركب أن يحتوي على قيمة NULL في أي من خصائصه المكونة له.", ans: "Entity Integrity dictates that no part of a primary key can be NULL. If any attribute within a composite primary key becomes NULL, the system can no longer guarantee unique row identification, breaking structural data integrity."},
+                    {en: "When is utilizing a Surrogate Key considered superior to using a Natural Primary Key within production code?", ar: "متى يعتبر استخدام المفتاح البديل (Surrogate) متفوقاً على استخدام المفتاح الأساسي الطبيعي في كود الإنتاج؟", ans: "A Surrogate Key (like an auto-incrementing ID) is superior when natural keys (like long composite names or business alphanumeric strings) are too bulky, prone to changing over time, or create massive performance lags during join operations."}
+                ]
+            },
+            5: { title: "Lecture 5: Mapping ER Schemas to Relational Models (Chapter 8)", expl: [], mcqs: [], essays: [] },
+            6: { title: "Lecture 6: Normalization Mechanics & 1NF (Chapter 9)", expl: [], mcqs: [], essays: [] },
+            7: { title: "Lecture 7: Advanced Normalization & 2NF, 3NF (Chapter 10)", expl: [], mcqs: [], essays: [] },
+            8: { title: "Lecture 8: Introduction to SQL Queries & Clauses (Chapter 11)", expl: [], mcqs: [], essays: [] },
+            9: { title: "Lecture 9: SQL Join Operations & Database Security (Chapter 11 Continued)", expl: [], mcqs: [], essays: [] },
+            10: { title: "Lecture 10: Final Comprehensive Database Revision (Chapter 12)", expl: [], mcqs: [], essays: [] }
+        };
+
+        function goToDashboard() {
+            document.getElementById('splash').style.transform = 'translateY(-100%)';
+            setTimeout(() => { document.getElementById('dashboard').style.display = 'block'; }, 800);
+        }
+
+        function createGrid() {
+            const grid = document.getElementById('grid-container');
+            Object.keys(allLectures).forEach(id => {
+                const lec = allLectures[id];
+                const card = document.createElement('div');
+                card.className = 'lec-card';
+                card.onclick = () => loadLec(id);
+                
+                let icon = 'fa-database';
+                if(id <= 3) icon = 'fa-diagram-project';
+                if(id == 4) icon = 'fa-key';
+                if(id >= 8) icon = 'fa-terminal';
+                
+                card.innerHTML = `
+                    <i class="fas ${icon}"></i>
+                    <h2>Lecture ${id}</h2>
+                    <p style="color: var(--primary); font-size:0.9rem; margin-top:5px;">${lec.title.split(':')[1] || 'Dynamic DB Topic'}</p>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function loadLec(id) {
+            const lec = allLectures[id];
+            const content = document.getElementById('lecture-content');
+            
+            if (!lec.mcqs || lec.mcqs.length === 0) {
+                content.innerHTML = `
+                    <h2>${lec.title}</h2>
+                    <div class="explanation-section" style="text-align:center; padding: 40px 0;">
+                        <i class="fas fa-file-code" style="font-size:4rem; color: var(--accent); margin-bottom:20px;"></i>
+                        <p style="font-size:1.2rem; color:#aaa;">This specific Database AI module is ready. Feed the engine the remaining PDF text data to instantly generate bilingual notes and quizzes.</p>
+                    </div>
+                `;
+            } else {
+                let explHTML = lec.expl.map(block => `
+                    <div class="expl-block">
+                        <div class="expl-en">${block.en}</div>
+                        <div class="expl-ar">${block.ar}</div>
+                    </div>
+                `).join('');
+
+                let mcqHTML = lec.mcqs.map((m, idx) => `
+                    <div class="q-card">
+                        <div class="q-text">Q${idx+1}: ${m.q}</div>
+                        <div class="opts-grid">
+                            ${m.o.map((o, oi) => `<button class="opt" onclick="check(this, ${oi === m.a})">${o}</button>`).join('')}
+                        </div>
+                    </div>
+                `).join('');
+
+                let essayHTML = lec.essays.map((e, idx) => `
+                    <div class="essay-item">
+                        <div class="essay-q" onclick="this.parentElement.classList.toggle('active')">
+                            <div>
+                                <span>${idx+1}. ${e.en}</span>
+                                <span class="ar-side">${e.ar}</span>
+                            </div>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="essay-ans">
+                            <strong>Standard Analytical Solution:</strong><br><br>${e.ans}
+                        </div>
+                    </div>
+                `).join('');
+
+                content.innerHTML = `
+                    <h2 style="font-family:'Orbitron'; color: var(--primary); margin-bottom:10px;">${lec.title}</h2>
+                    <hr style="border:0; height:1px; background:rgba(255,255,255,0.1); margin-bottom:30px;">
+                    
+                    <h3 style="color:var(--accent); margin-bottom:15px;"><i class="fas fa-book-open"></i> Analytical Explanations (شرح تفصيلي ثنائي اللغة)</h3>
+                    <div class="explanation-section">${explHTML}</div>
+                    
+                    <h3 style="color:var(--accent); margin-bottom:15px; margin-top:40px;"><i class="fas fa-tasks"></i> Global Academic Quizzes (10 MCQs - English Only)</h3>
+                    <div class="quiz-area">${mcqHTML}</div>
+                    
+                    <h3 style="color:var(--accent); margin-bottom:15px; margin-top:50px;"><i class="fas fa-feather-alt"></i> Critical Analytical Challenges (5 Essays - Bilingual)</h3>
+                    <div class="essay-area">${essayHTML}</div>
+                `;
+            }
+
+            document.getElementById('dashboard').style.display = 'none';
+            document.getElementById('lecture-view').style.display = 'block';
+            window.scrollTo(0,0);
+        }
+
+        function backToDashboard() {
+            document.getElementById('lecture-view').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+        }
+
+        function check(el, isCorrect) {
+            const parent = el.parentElement;
+            if (parent.classList.contains('locked')) return;
+            parent.classList.add('locked');
+            
+            const buttons = parent.querySelectorAll('.opt');
+            buttons.forEach(btn => btn.style.cursor = 'default');
+            
+            if(isCorrect) {
+                el.classList.add('correct');
+            } else {
+                el.classList.add('wrong');
+            }
+        }
+
+        // Initialize Application
+        createGrid();
+    </script>
+</body>
+</html>
